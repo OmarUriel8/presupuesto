@@ -1,13 +1,16 @@
-import { ModulePlaceholder } from "@/components/common/module-placeholder";
+"use client";
+
+import { PageHeader } from "@/components/common/page-header";
+import { FormasPagoTable } from "@/components/forma-pago/formas-pago-table";
 
 export default function FormasPagoPage(): React.JSX.Element {
   return (
-    <ModulePlaceholder
-      title="Formas de pago"
-      description="Cuentas y métodos de pago (tablas cuenta y forma_pago)."
-      emptyTitle="Sin formas de pago todavía"
-      emptyDescription="Aquí gestionarás efectivo, tarjetas y cuentas bancarias."
-      actionLabel="Nueva forma de pago"
-    />
+    <div className="space-y-6">
+      <PageHeader
+        title="Formas de pago"
+        description="Gestiona tus métodos de pago como efectivo, tarjetas y transferencias."
+      />
+      <FormasPagoTable />
+    </div>
   );
 }

@@ -16,3 +16,11 @@ export {
   deleteCategoria,
 } from "./categoria";
 export type { Categoria } from "./categoria";
+export {
+  getFormasPagoByUsuario,
+  getFormaPagoById,
+  createFormaPago,
+  updateFormaPago,
+  deleteFormaPago,
+} from "./forma_pago";
+export type { FormaPago } from "./forma_pago";
