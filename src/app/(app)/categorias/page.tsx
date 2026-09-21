@@ -1,13 +1,14 @@
-import { ModulePlaceholder } from "@/components/common/module-placeholder";
+import { PageHeader } from "@/components/common/page-header";
+import { CategoriasTable } from "@/components/categorias/categorias-table";
 
 export default function CategoriasPage(): React.JSX.Element {
   return (
-    <ModulePlaceholder
-      title="Categorías"
-      description="Clasificación de ingresos y gastos (tabla categoria)."
-      emptyTitle="Sin categorías todavía"
-      emptyDescription="Las categorías existentes en la base de datos se mostrarán aquí."
-      actionLabel="Nueva categoría"
-    />
+    <div className="space-y-6">
+      <PageHeader
+        title="Categorías"
+        description="Clasifica tus ingresos y gastos por categoría."
+      />
+      <CategoriasTable />
+    </div>
   );
 }

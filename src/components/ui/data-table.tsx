@@ -5,17 +5,13 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
+  type VisibilityState,
   flexRender,
-  useTable,
-  tableFeatures,
-  columnFilteringFeature,
-  rowSortingFeature,
-  rowPaginationFeature,
-  createFilteredRowModel,
-  createSortedRowModel,
-  createPaginatedRowModel,
-  filterFn_includesString,
-  sortFn_alphanumeric,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
@@ -30,19 +26,8 @@ import {
 } from "@/components/ui/table";
 import { ChevronLeftIcon, ChevronRightIcon, SearchIcon } from "lucide-react";
 
-const features = tableFeatures({
-  columnFilteringFeature,
-  rowSortingFeature,
-  rowPaginationFeature,
-  filteredRowModel: createFilteredRowModel(),
-  sortedRowModel: createSortedRowModel(),
-  paginatedRowModel: createPaginatedRowModel(),
-  filterFns: { includesString: filterFn_includesString },
-  sortFns: { alphanumeric: sortFn_alphanumeric },
-});
-
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<typeof features, TData>[];
+  columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchPlaceholder?: string;
   searchColumn?: string;
@@ -57,22 +42,31 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] =
     React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
-  const table = useTable({
-    features,
-    columns,
+  const table = useReactTable({
     data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
     state: {
       sorting,
       columnFilters,
-    },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    initialState: {
-      pagination: {
-        pageIndex: 0,
-        pageSize: 10,
-      },
+      columnVisibility,
+      rowSelection,
     },
   });
 
@@ -115,7 +109,10 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(

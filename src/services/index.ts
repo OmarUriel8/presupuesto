@@ -8,3 +8,11 @@ export {
   changePassword,
 } from "./auth";
 export type { AuthUser } from "./auth";
+export {
+  getCategoriasByUsuario,
+  getCategoriaById,
+  createCategoria,
+  updateCategoria,
+  deleteCategoria,
+} from "./categoria";
+export type { Categoria } from "./categoria";

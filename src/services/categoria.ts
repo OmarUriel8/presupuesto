@@ -14,9 +14,7 @@ export interface Categoria {
   fecha_actualizacion: Date;
 }
 
-export async function getCategoriasByUsuario(
-  id_usuario: string
-): Promise<Categoria[]> {
+export async function getCategoriasByUsuario(id_usuario: string): Promise<Categoria[]> {
   return prisma.categoria.findMany({
     where: { id_usuario },
     orderBy: [{ tipo: "asc" }, { nombre: "asc" }],
@@ -39,7 +37,7 @@ export async function createCategoria(
     data: {
       id_usuario: data.id_usuario,
       nombre: data.nombre,
-      tipo: data.tipo,
+      tipo: data.tipo.toUpperCase(),
       color: data.color || null,
       icono: data.icono || null,
       activa: data.activa,
@@ -50,9 +48,7 @@ export async function createCategoria(
 export async function updateCategoria(
   id_categoria: string,
   id_usuario: string,
-  data: Partial<
-    Pick<Categoria, "nombre" | "tipo" | "color" | "icono" | "activa">
-  >
+  data: Partial<Pick<Categoria, "nombre" | "tipo" | "color" | "icono" | "activa">>
 ): Promise<Categoria> {
   return prisma.categoria.update({
     where: {
@@ -66,10 +62,7 @@ export async function updateCategoria(
   });
 }
 
-export async function deleteCategoria(
-  id_categoria: string,
-  id_usuario: string
-): Promise<void> {
+export async function deleteCategoria(id_categoria: string, id_usuario: string): Promise<void> {
   await prisma.categoria.delete({
     where: {
       id_categoria,
