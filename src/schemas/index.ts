@@ -1,3 +1,4 @@
 // Validaciones con Zod. Los esquemas por módulo se agregarán
 // cuando se implemente cada CRUD (movimientos, presupuestos, etc.).
-export {};
+export { registerSchema, loginSchema, updateProfileSchema, changePasswordSchema } from "./auth";
+export type { RegisterInput, LoginInput, UpdateProfileInput, ChangePasswordInput } from "./auth";

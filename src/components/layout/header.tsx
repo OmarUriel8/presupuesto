@@ -6,12 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/layout/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/layout/user-menu";
 
 interface HeaderProps {
   title?: string;
+  user?: {
+    nombre: string;
+    email: string;
+  };
 }
 
-export function Header({ title = "Panel" }: HeaderProps): React.JSX.Element {
+export function Header({ title = "Panel", user }: HeaderProps): React.JSX.Element {
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-4 backdrop-blur sm:px-6">
       <Sheet>
@@ -34,6 +39,7 @@ export function Header({ title = "Panel" }: HeaderProps): React.JSX.Element {
 
       <div className="flex items-center gap-1">
         <ThemeToggle />
+        {user && <UserMenu nombre={user.nombre} email={user.email} />}
       </div>
     </header>
   );

@@ -1,3 +1,7 @@
+import { redirect } from "next/navigation";
+
+import { getSession } from "@/lib/auth";
+import { getUserById } from "@/services/auth";
 import { Header } from "@/components/layout/header";
 import { SidebarContent } from "@/components/layout/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -6,7 +10,19 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export default function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
+export default async function AppLayout({ children }: AppLayoutProps): Promise<React.JSX.Element> {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const user = await getUserById(session.userId);
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
     <div className="bg-muted/40 min-h-screen">
       <aside
@@ -17,13 +33,16 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
       </aside>
 
       <div className="flex min-h-screen flex-col lg:pl-64">
-        <Header title="Gestión de presupuestos" />
+        <Header
+          title="Gestión de presupuestos"
+          user={{ nombre: user.nombre, email: user.email }}
+        />
         <Separator className="sr-only" />
         <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-4 py-6 sm:px-6">
           {children}
         </main>
         <footer className="text-muted-foreground px-4 py-4 text-center text-xs sm:px-6">
-          Presupuesto · Datos de ejemplo en el dashboard. La base de datos no se modifica.
+          Presupuesto · v0.1.0
         </footer>
       </div>
     </div>
