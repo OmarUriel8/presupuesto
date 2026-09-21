@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model categoria {
+  id_categoria          String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario            String                  @db.Uuid
+  nombre                String                  @db.VarChar(100)
+  tipo                  String                  @db.VarChar(10)
+  color                 String?                 @db.VarChar(20)
+  icono                 String?                 @db.VarChar(50)
+  activa                Boolean                 @default(true)
+  fecha_creacion        DateTime                @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion   DateTime                @default(now()) @db.Timestamptz(6)
+  usuario               usuario                 @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_categoria_usuario")
+  movimiento            movimiento[]
+  presupuesto_categoria presupuesto_categoria[]
+
+  @@unique([id_usuario, nombre], map: "uq_categoria_usuario_nombre")
+  @@index([id_usuario], map: "idx_categoria_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model cuenta {
+  id_cuenta           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario          String       @db.Uuid
+  nombre              String       @db.VarChar(100)
+  tipo                String       @db.VarChar(20)
+  saldo_inicial       Decimal      @default(0) @db.Decimal(14, 2)
+  activa              Boolean      @default(true)
+  fecha_creacion      DateTime     @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime     @default(now()) @db.Timestamptz(6)
+  usuario             usuario      @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_cuenta_usuario")
+  movimiento          movimiento[]
+
+  @@unique([id_usuario, nombre], map: "uq_cuenta_usuario_nombre")
+  @@index([id_usuario], map: "idx_cuenta_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model forma_pago {
+  id_forma_pago       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario          String       @db.Uuid
+  nombre              String       @db.VarChar(100)
+  tipo                String       @db.VarChar(30)
+  activa              Boolean      @default(true)
+  fecha_creacion      DateTime     @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime     @default(now()) @db.Timestamptz(6)
+  usuario             usuario      @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_forma_pago_usuario")
+  movimiento          movimiento[]
+
+  @@unique([id_usuario, nombre], map: "uq_forma_pago_usuario_nombre")
+  @@index([id_usuario], map: "idx_forma_pago_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model movimiento {
+  id_movimiento       String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario          String      @db.Uuid
+  id_categoria        String      @db.Uuid
+  id_cuenta           String?     @db.Uuid
+  id_forma_pago       String?     @db.Uuid
+  fecha               DateTime    @db.Date
+  descripcion         String      @db.VarChar(255)
+  monto               Decimal     @db.Decimal(14, 2)
+  tipo                String      @db.VarChar(10)
+  notas               String?
+  fecha_creacion      DateTime    @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime    @default(now()) @db.Timestamptz(6)
+  categoria           categoria   @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_categoria")
+  cuenta              cuenta?     @relation(fields: [id_cuenta], references: [id_cuenta], onUpdate: NoAction, map: "fk_movimiento_cuenta")
+  forma_pago          forma_pago? @relation(fields: [id_forma_pago], references: [id_forma_pago], onUpdate: NoAction, map: "fk_movimiento_forma_pago")
+  usuario             usuario     @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_movimiento_usuario")
+
+  @@index([id_categoria], map: "idx_movimiento_categoria")
+  @@index([id_cuenta], map: "idx_movimiento_cuenta")
+  @@index([fecha], map: "idx_movimiento_fecha")
+  @@index([id_usuario], map: "idx_movimiento_usuario")
+  @@index([id_usuario, fecha], map: "idx_movimiento_usuario_fecha")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model presupuesto {
+  id_presupuesto        String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario            String                  @db.Uuid
+  nombre                String                  @db.VarChar(150)
+  fecha_inicio          DateTime                @db.Date
+  fecha_fin             DateTime                @db.Date
+  activo                Boolean                 @default(true)
+  fecha_creacion        DateTime                @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion   DateTime                @default(now()) @db.Timestamptz(6)
+  usuario               usuario                 @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_presupuesto_usuario")
+  presupuesto_categoria presupuesto_categoria[]
+
+  @@index([id_usuario], map: "idx_presupuesto_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model presupuesto_categoria {
+  id_presupuesto_categoria String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_presupuesto           String      @db.Uuid
+  id_categoria             String      @db.Uuid
+  monto_presupuestado      Decimal     @db.Decimal(14, 2)
+  fecha_creacion           DateTime    @default(now()) @db.Timestamptz(6)
+  categoria                categoria   @relation(fields: [id_categoria], references: [id_categoria], onDelete: Cascade, onUpdate: NoAction, map: "fk_presupuesto_categoria_categoria")
+  presupuesto              presupuesto @relation(fields: [id_presupuesto], references: [id_presupuesto], onDelete: Cascade, onUpdate: NoAction, map: "fk_presupuesto_categoria_presupuesto")
+
+  @@unique([id_presupuesto, id_categoria], map: "uq_presupuesto_categoria")
+  @@index([id_presupuesto], map: "idx_presupuesto_categoria_presupuesto")
+}
+
+model usuario {
+  id_usuario          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre              String        @db.VarChar(150)
+  email               String        @unique @db.VarChar(255)
+  password_hash       String
+  activo              Boolean       @default(true)
+  fecha_creacion      DateTime      @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime      @default(now()) @db.Timestamptz(6)
+  categoria           categoria[]
+  cuenta              cuenta[]
+  forma_pago          forma_pago[]
+  movimiento          movimiento[]
+  presupuesto         presupuesto[]
+}
