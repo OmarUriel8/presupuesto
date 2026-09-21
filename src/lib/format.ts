@@ -23,3 +23,9 @@ export function formatDate(value: Date | string): string {
   const date = value instanceof Date ? value : new Date(value);
   return dateFormatter.format(date);
 }
+
+/** Fecha AAAA-MM-DD -> Date en medianoche local (evita el corrimiento por zona horaria). */
+export function formatToLocalDate(fecha: string): Date {
+  const [year, month, day] = fecha.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}

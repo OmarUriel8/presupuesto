@@ -24,3 +24,13 @@ export {
   deleteFormaPago,
 } from "./forma_pago";
 export type { FormaPago } from "./forma_pago";
+export {
+  getMovimientosByUsuario,
+  getMovimientoById,
+  createMovimiento,
+  updateMovimiento,
+  deleteMovimiento,
+  getCategoriasActivasByUsuario,
+  getFormasPagoActivasByUsuario,
+} from "./movimiento";
+export type { Movimiento, MovimientoWithRelations } from "./movimiento";

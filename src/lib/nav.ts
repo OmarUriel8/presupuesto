@@ -29,12 +29,12 @@ export const mainNav: NavItem[] = [
     icon: ArrowLeftRight,
     description: "Ingresos y gastos",
   },
-  {
-    title: "Presupuestos",
-    href: "/presupuestos",
-    icon: PiggyBank,
-    description: "Límites por categoría",
-  },
+  // {
+  //   title: "Presupuestos",
+  //   href: "/presupuestos",
+  //   icon: PiggyBank,
+  //   description: "Límites por categoría",
+  // },
   {
     title: "Categorías",
     href: "/categorias",

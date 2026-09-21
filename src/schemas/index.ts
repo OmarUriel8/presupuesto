@@ -6,3 +6,5 @@ export { categoriaSchema } from "./categoria";
 export type { CategoriaInput } from "./categoria";
 export { forma_pagoSchema } from "./forma_pago";
 export type { FormaPagoInput } from "./forma_pago";
+export { movimientoSchema } from "./movimiento";
+export type { MovimientoInput } from "./movimiento";

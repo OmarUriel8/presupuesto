@@ -28,16 +28,15 @@ model categoria {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model cuenta {
-  id_cuenta           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  id_usuario          String       @db.Uuid
-  nombre              String       @db.VarChar(100)
-  tipo                String       @db.VarChar(20)
-  saldo_inicial       Decimal      @default(0) @db.Decimal(14, 2)
-  activa              Boolean      @default(true)
-  fecha_creacion      DateTime     @default(now()) @db.Timestamptz(6)
-  fecha_actualizacion DateTime     @default(now()) @db.Timestamptz(6)
-  usuario             usuario      @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_cuenta_usuario")
-  movimiento          movimiento[]
+  id_cuenta           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario          String   @db.Uuid
+  nombre              String   @db.VarChar(100)
+  tipo                String   @db.VarChar(20)
+  saldo_inicial       Decimal  @default(0) @db.Decimal(14, 2)
+  activa              Boolean  @default(true)
+  fecha_creacion      DateTime @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime @default(now()) @db.Timestamptz(6)
+  usuario             usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_cuenta_usuario")
 
   @@unique([id_usuario, nombre], map: "uq_cuenta_usuario_nombre")
   @@index([id_usuario], map: "idx_cuenta_usuario")
@@ -64,7 +63,6 @@ model movimiento {
   id_movimiento       String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   id_usuario          String      @db.Uuid
   id_categoria        String      @db.Uuid
-  id_cuenta           String?     @db.Uuid
   id_forma_pago       String?     @db.Uuid
   fecha               DateTime    @db.Date
   descripcion         String      @db.VarChar(255)
@@ -74,12 +72,10 @@ model movimiento {
   fecha_creacion      DateTime    @default(now()) @db.Timestamptz(6)
   fecha_actualizacion DateTime    @default(now()) @db.Timestamptz(6)
   categoria           categoria   @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_categoria")
-  cuenta              cuenta?     @relation(fields: [id_cuenta], references: [id_cuenta], onUpdate: NoAction, map: "fk_movimiento_cuenta")
   forma_pago          forma_pago? @relation(fields: [id_forma_pago], references: [id_forma_pago], onUpdate: NoAction, map: "fk_movimiento_forma_pago")
   usuario             usuario     @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "fk_movimiento_usuario")
 
   @@index([id_categoria], map: "idx_movimiento_categoria")
-  @@index([id_cuenta], map: "idx_movimiento_cuenta")
   @@index([fecha], map: "idx_movimiento_fecha")
   @@index([id_usuario], map: "idx_movimiento_usuario")
   @@index([id_usuario, fecha], map: "idx_movimiento_usuario_fecha")
