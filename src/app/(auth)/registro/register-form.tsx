@@ -10,6 +10,7 @@ import { register } from "@/app/(auth)/registro/actions";
 import { registerSchema, type RegisterInput } from "@/schemas/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -43,14 +44,12 @@ export function RegisterForm(): React.JSX.Element {
     <Card>
       <CardHeader className="text-center">
         <CardTitle>Crear cuenta</CardTitle>
-        <CardDescription>
-          Regístrate para empezar a administrar tus finanzas.
-        </CardDescription>
+        <CardDescription>Regístrate para empezar a administrar tus finanzas.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
           {serverError && (
-            <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <div className="bg-destructive/10 text-destructive rounded-md px-4 py-3 text-sm">
               {serverError}
             </div>
           )}
@@ -67,7 +66,7 @@ export function RegisterForm(): React.JSX.Element {
               aria-describedby={errors.nombre ? "nombre-error" : undefined}
             />
             {errors.nombre && (
-              <p id="nombre-error" className="text-sm text-destructive">
+              <p id="nombre-error" className="text-destructive text-sm">
                 {errors.nombre.message}
               </p>
             )}
@@ -85,7 +84,7 @@ export function RegisterForm(): React.JSX.Element {
               aria-describedby={errors.email ? "email-error" : undefined}
             />
             {errors.email && (
-              <p id="email-error" className="text-sm text-destructive">
+              <p id="email-error" className="text-destructive text-sm">
                 {errors.email.message}
               </p>
             )}
@@ -93,9 +92,8 @@ export function RegisterForm(): React.JSX.Element {
 
           <div className="space-y-2">
             <Label htmlFor="password">Contraseña</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               placeholder="••••••••"
               autoComplete="new-password"
               {...registerField("password")}
@@ -103,7 +101,7 @@ export function RegisterForm(): React.JSX.Element {
               aria-describedby={errors.password ? "password-error" : undefined}
             />
             {errors.password && (
-              <p id="password-error" className="text-sm text-destructive">
+              <p id="password-error" className="text-destructive text-sm">
                 {errors.password.message}
               </p>
             )}
@@ -111,19 +109,16 @@ export function RegisterForm(): React.JSX.Element {
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-            <Input
+            <PasswordInput
               id="confirmPassword"
-              type="password"
               placeholder="••••••••"
               autoComplete="new-password"
               {...registerField("confirmPassword")}
               aria-invalid={!!errors.confirmPassword}
-              aria-describedby={
-                errors.confirmPassword ? "confirm-password-error" : undefined
-              }
+              aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
             />
             {errors.confirmPassword && (
-              <p id="confirm-password-error" className="text-sm text-destructive">
+              <p id="confirm-password-error" className="text-destructive text-sm">
                 {errors.confirmPassword.message}
               </p>
             )}
@@ -145,7 +140,7 @@ export function RegisterForm(): React.JSX.Element {
             ¿Ya tienes cuenta?{" "}
             <Link
               href="/login"
-              className="font-medium text-foreground underline-offset-4 hover:underline"
+              className="text-foreground font-medium underline-offset-4 hover:underline"
             >
               Inicia sesión
             </Link>

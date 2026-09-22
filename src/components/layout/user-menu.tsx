@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { logout } from "@/components/layout/logout-action";
 import { clearStoredRedirectPath } from "@/lib/redirect";
+import Link from "next/link";
 
 interface UserMenuProps {
   nombre: string;
@@ -45,10 +46,10 @@ export function UserMenu({ nombre, email }: UserMenuProps): React.JSX.Element {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <a href="/configuracion">
+          <Link href="/configuracion" className="cursor-pointer">
             <User className="size-4" aria-hidden="true" />
             Mi perfil
-          </a>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -56,6 +57,7 @@ export function UserMenu({ nombre, email }: UserMenuProps): React.JSX.Element {
             clearStoredRedirectPath();
             logout();
           }}
+          className="cursor-pointer"
         >
           <LogOut className="size-4" aria-hidden="true" />
           Cerrar sesión

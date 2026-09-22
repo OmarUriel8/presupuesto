@@ -8,6 +8,7 @@ import { Loader2, Save, Shield } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -176,9 +177,8 @@ function PasswordForm(): React.JSX.Element {
 
           <div className="space-y-2">
             <Label htmlFor="currentPassword">Contraseña actual</Label>
-            <Input
+            <PasswordInput
               id="currentPassword"
-              type="password"
               placeholder="••••••••"
               autoComplete="current-password"
               {...register("currentPassword")}
@@ -194,9 +194,8 @@ function PasswordForm(): React.JSX.Element {
 
           <div className="space-y-2">
             <Label htmlFor="newPassword">Nueva contraseña</Label>
-            <Input
+            <PasswordInput
               id="newPassword"
-              type="password"
               placeholder="••••••••"
               autoComplete="new-password"
               {...register("newPassword")}
@@ -212,9 +211,8 @@ function PasswordForm(): React.JSX.Element {
 
           <div className="space-y-2">
             <Label htmlFor="confirmNewPassword">Confirmar nueva contraseña</Label>
-            <Input
+            <PasswordInput
               id="confirmNewPassword"
-              type="password"
               placeholder="••••••••"
               autoComplete="new-password"
               {...register("confirmNewPassword")}
