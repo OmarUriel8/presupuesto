@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { authenticateUser } from "@/services/auth";
 import { createSession } from "@/lib/auth";
+import { sanitizeRedirectPath } from "@/lib/redirect";
 
 export interface LoginState {
   message?: string;
@@ -11,15 +12,15 @@ export interface LoginState {
 export async function login(data: {
   email: string;
   password: string;
+  from?: string;
 }): Promise<LoginState> {
   try {
     const user = await authenticateUser(data.email, data.password);
     await createSession(user.id_usuario);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error al iniciar sesión.";
+    const message = error instanceof Error ? error.message : "Error al iniciar sesión.";
     return { message };
   }
 
-  redirect("/dashboard");
+  redirect(sanitizeRedirectPath(data.from) ?? "/dashboard");
 }
