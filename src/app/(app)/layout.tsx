@@ -6,6 +6,8 @@ import { Header } from "@/components/layout/header";
 import { SidebarContent } from "@/components/layout/sidebar";
 import { Separator } from "@/components/ui/separator";
 
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.1.0";
+
 interface AppLayoutProps {
   children: React.ReactNode;
 }
@@ -33,16 +35,13 @@ export default async function AppLayout({ children }: AppLayoutProps): Promise<R
       </aside>
 
       <div className="flex min-h-screen flex-col lg:pl-64">
-        <Header
-          title="Gestión de presupuestos"
-          user={{ nombre: user.nombre, email: user.email }}
-        />
+        <Header title="Gestión de presupuestos" user={{ nombre: user.nombre, email: user.email }} />
         <Separator className="sr-only" />
         <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-4 py-6 sm:px-6">
           {children}
         </main>
         <footer className="text-muted-foreground px-4 py-4 text-center text-xs sm:px-6">
-          Presupuesto · v0.1.0
+          Presupuesto · v{APP_VERSION}
         </footer>
       </div>
     </div>

@@ -61,12 +61,12 @@ function ProfileForm({ user }: { user: UserData }): React.JSX.Element {
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
           {serverResult.success && (
-            <div className="rounded-md bg-success/10 px-4 py-3 text-sm text-success">
+            <div className="bg-success/10 text-success rounded-md px-4 py-3 text-sm">
               {serverResult.success}
             </div>
           )}
           {serverResult.message && (
-            <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <div className="bg-destructive/10 text-destructive rounded-md px-4 py-3 text-sm">
               {serverResult.message}
             </div>
           )}
@@ -83,7 +83,7 @@ function ProfileForm({ user }: { user: UserData }): React.JSX.Element {
               aria-describedby={errors.nombre ? "profile-nombre-error" : undefined}
             />
             {errors.nombre && (
-              <p id="profile-nombre-error" className="text-sm text-destructive">
+              <p id="profile-nombre-error" className="text-destructive text-sm">
                 {errors.nombre.message}
               </p>
             )}
@@ -101,14 +101,14 @@ function ProfileForm({ user }: { user: UserData }): React.JSX.Element {
               aria-describedby={errors.email ? "profile-email-error" : undefined}
             />
             {errors.email && (
-              <p id="profile-email-error" className="text-sm text-destructive">
+              <p id="profile-email-error" className="text-destructive text-sm">
                 {errors.email.message}
               </p>
             )}
           </div>
         </CardContent>
 
-        <div className="px-6 pb-6 pt-2">
+        <div className="px-6 pt-2 pb-6">
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
@@ -159,19 +159,17 @@ function PasswordForm(): React.JSX.Element {
     <Card>
       <CardHeader>
         <CardTitle>Cambiar contraseña</CardTitle>
-        <CardDescription>
-          Asegúrate de usar una contraseña fuerte y única.
-        </CardDescription>
+        <CardDescription>Asegúrate de usar una contraseña fuerte y única.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
           {serverResult.success && (
-            <div className="rounded-md bg-success/10 px-4 py-3 text-sm text-success">
+            <div className="bg-success/10 text-success rounded-md px-4 py-3 text-sm">
               {serverResult.success}
             </div>
           )}
           {serverResult.message && (
-            <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <div className="bg-destructive/10 text-destructive rounded-md px-4 py-3 text-sm">
               {serverResult.message}
             </div>
           )}
@@ -185,12 +183,10 @@ function PasswordForm(): React.JSX.Element {
               autoComplete="current-password"
               {...register("currentPassword")}
               aria-invalid={!!errors.currentPassword}
-              aria-describedby={
-                errors.currentPassword ? "current-password-error" : undefined
-              }
+              aria-describedby={errors.currentPassword ? "current-password-error" : undefined}
             />
             {errors.currentPassword && (
-              <p id="current-password-error" className="text-sm text-destructive">
+              <p id="current-password-error" className="text-destructive text-sm">
                 {errors.currentPassword.message}
               </p>
             )}
@@ -205,12 +201,10 @@ function PasswordForm(): React.JSX.Element {
               autoComplete="new-password"
               {...register("newPassword")}
               aria-invalid={!!errors.newPassword}
-              aria-describedby={
-                errors.newPassword ? "new-password-error" : undefined
-              }
+              aria-describedby={errors.newPassword ? "new-password-error" : undefined}
             />
             {errors.newPassword && (
-              <p id="new-password-error" className="text-sm text-destructive">
+              <p id="new-password-error" className="text-destructive text-sm">
                 {errors.newPassword.message}
               </p>
             )}
@@ -230,14 +224,14 @@ function PasswordForm(): React.JSX.Element {
               }
             />
             {errors.confirmNewPassword && (
-              <p id="confirm-new-password-error" className="text-sm text-destructive">
+              <p id="confirm-new-password-error" className="text-destructive text-sm">
                 {errors.confirmNewPassword.message}
               </p>
             )}
           </div>
         </CardContent>
 
-        <div className="px-6 pb-6 pt-2">
+        <div className="px-6 pt-2 pb-6">
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
@@ -281,7 +275,14 @@ export function ConfiguracionClient(): React.JSX.Element {
         </TabsList>
 
         <TabsContent value="perfil" className="mt-6">
-          {user && <ProfileForm user={user} />}
+          {user ? (
+            <ProfileForm user={user} />
+          ) : (
+            <div className="flex min-h-48 items-center justify-center">
+              <Loader2 className="text-muted-foreground size-8 animate-spin" aria-hidden="true" />
+              <span className="sr-only">Cargando...</span>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="seguridad" className="mt-6">

@@ -10,7 +10,7 @@ import {
 import { FormaPagoDialog } from "@/components/forma-pago/forma-pago-dialog";
 import { DeleteConfirmDialog } from "@/components/forma-pago/delete-confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { Loader2, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { FormaPagoInput } from "@/schemas/forma_pago";
 import {
@@ -27,13 +27,11 @@ export function FormasPagoTable(): React.JSX.Element {
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [editingFormaPago, setEditingFormaPago] =
-    React.useState<FormaPagoRow | null>(null);
+  const [editingFormaPago, setEditingFormaPago] = React.useState<FormaPagoRow | null>(null);
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [deletingFormaPago, setDeletingFormaPago] =
-    React.useState<FormaPagoRow | null>(null);
+  const [deletingFormaPago, setDeletingFormaPago] = React.useState<FormaPagoRow | null>(null);
 
   const [isPending, startTransition] = React.useTransition();
 
@@ -44,9 +42,7 @@ export function FormasPagoTable(): React.JSX.Element {
       const result = await getFormasPago();
       setData(result);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error al cargar las formas de pago."
-      );
+      setError(err instanceof Error ? err.message : "Error al cargar las formas de pago.");
     } finally {
       setLoading(false);
     }
@@ -136,16 +132,9 @@ export function FormasPagoTable(): React.JSX.Element {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
-          <div className="h-9 w-40 animate-pulse rounded bg-gray-200" />
-        </div>
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 w-full animate-pulse rounded bg-gray-200" />
-          ))}
-        </div>
+      <div className="flex min-h-48 items-center justify-center">
+        <Loader2 className="text-muted-foreground size-8 animate-spin" aria-hidden="true" />
+        <span className="sr-only">Cargando...</span>
       </div>
     );
   }

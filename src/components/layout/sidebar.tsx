@@ -7,6 +7,8 @@ import { Wallet } from "lucide-react";
 import { mainNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.1.0";
+
 interface SidebarContentProps {
   onNavigate?: () => void;
 }
@@ -58,7 +60,7 @@ export function SidebarContent({ onNavigate }: SidebarContentProps): React.JSX.E
         })}
       </nav>
 
-      <p className="text-muted-foreground px-4 py-4 text-xs">v0.1.0 · Datos de ejemplo</p>
+      <p className="text-muted-foreground px-4 py-4 text-xs">v{APP_VERSION}</p>
     </div>
   );
 }

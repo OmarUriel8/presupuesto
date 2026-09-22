@@ -10,7 +10,7 @@ import {
 import { CategoriaDialog } from "@/components/categorias/categoria-dialog";
 import { DeleteConfirmDialog } from "@/components/categorias/delete-confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { Loader2, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { CategoriaInput } from "@/schemas/categoria";
 import {
@@ -28,13 +28,11 @@ export function CategoriasTable(): React.JSX.Element {
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [editingCategoria, setEditingCategoria] =
-    React.useState<CategoriaRow | null>(null);
+  const [editingCategoria, setEditingCategoria] = React.useState<CategoriaRow | null>(null);
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [deletingCategoria, setDeletingCategoria] =
-    React.useState<CategoriaRow | null>(null);
+  const [deletingCategoria, setDeletingCategoria] = React.useState<CategoriaRow | null>(null);
 
   const [isPending, startTransition] = React.useTransition();
 
@@ -45,9 +43,7 @@ export function CategoriasTable(): React.JSX.Element {
       const result = await getCategorias();
       setData(result);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error al cargar las categorías."
-      );
+      setError(err instanceof Error ? err.message : "Error al cargar las categorías.");
     } finally {
       setLoading(false);
     }
@@ -95,9 +91,7 @@ export function CategoriasTable(): React.JSX.Element {
     if (!deletingCategoria) return;
 
     startTransition(async () => {
-      const result = await deleteCategoriaAction(
-        deletingCategoria.id_categoria
-      );
+      const result = await deleteCategoriaAction(deletingCategoria.id_categoria);
       if (result.message) {
         toast.error("Error", { description: result.message });
       }
@@ -139,16 +133,9 @@ export function CategoriasTable(): React.JSX.Element {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
-          <div className="h-9 w-40 animate-pulse rounded bg-gray-200" />
-        </div>
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 w-full animate-pulse rounded bg-gray-200" />
-          ))}
-        </div>
+      <div className="flex min-h-48 items-center justify-center">
+        <Loader2 className="text-muted-foreground size-8 animate-spin" aria-hidden="true" />
+        <span className="sr-only">Cargando...</span>
       </div>
     );
   }
