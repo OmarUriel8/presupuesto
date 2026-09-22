@@ -2,68 +2,67 @@
 
 ## Project Overview
 
-Presupuesto — personal finance manager built with Next.js 16, Prisma 7, Tailwind CSS v4, and shadcn/ui components.
+Presupuesto — personal finance manager (Spanish UI) built with Next.js 16 App Router, Prisma 7 + Neon PostgreSQL, Tailwind CSS v4, shadcn/ui, Zod 4.
 
-## Package Manager
+`README.md` is stale create-next-app boilerplate (suggests npm/yarn) — ignore its commands; trust `package.json`.
 
-**Use `pnpm`** (not npm/yarn): `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm format`, `pnpm db:generate`, `pnpm db:pull`, `pnpm db:studio`
+## Commands
 
-## Key Architecture
+**Use `pnpm`** (pinned to `pnpm@10.32.1`):
 
-### Route Structure
-- `src/app/layout.tsx` — Root layout with `ThemeProvider` and `sonner.Toaster`
-- `src/app/(app)/layout.tsx` — Authenticated layout (checks session via `getSession()`, redirects to `/login` if missing). Has sidebar + header.
-- `src/app/(auth)/` — Login and registration pages (no layout wrapper)
-- `src/app/(app)/` — All authenticated pages: dashboard, categorias, formas-pago, movimientos, presupuestos, reportes, configuracion
+- `pnpm dev` — dev server
+- `pnpm lint` — ESLint · `pnpm format:check` / `pnpm format` — Prettier
+- `npx tsc --noEmit` — typecheck (there is **no** `typecheck` script)
+- `pnpm build` — runs `prisma generate && next build`
+- `pnpm db:generate` / `pnpm db:pull` / `pnpm db:studio`
 
-### Data Layer Pattern (for each CRUD module)
-1. **Service** (`src/services/<module>.ts`): Uses `"use server"` + `import "server-only"`, wraps Prisma calls. All functions receive `id_usuario` from session.
-2. **Schema** (`src/schemas/<module>.ts`): Zod validation object + exported type
-3. **Server Actions** (`src/app/(app)/<module>/actions.ts`): `"use server"`, calls `getSession()` to get `session.userId`, validates with schema, delegates to service. Functions use `_prev` pattern for create/update.
-4. **Components** (`src/components/<module>/`): Table (with `DataTable`), Dialog (with `react-hook-form` + `zodResolver` + `Controller`), DeleteConfirmDialog, Columns definitions
-5. **Page** (`src/app/(app)/<module>/page.tsx`): Uses `"use client"`, renders the table component
+There is **no test suite and no CI** (`.github/` doesn't exist). Verify changes with: `pnpm lint` → `npx tsc --noEmit` → `pnpm build`.
 
-### Prisma & Database
-- **Prisma 7.x** with `@prisma/adapter-neon` for Neon PostgreSQL
-- Client generated to `src/generated/prisma/` (NOT `node_modules/@prisma/client`)
-- Generator uses `provider = "prisma-client"` (not `prisma-client-js`)
-- Schema models use `@db.Uuid`, `@db.VarChar()`, `gen_random_uuid()`, `@db.Timestamptz(6)`
-- Tables have unique constraints on `[id_usuario, nombre]` and indexes on `id_usuario`
-- No migration files in repo — DB is pulled directly via `pnpm db:pull`
+Single package — `pnpm-workspace.yaml` only lists `onlyBuiltDependencies`, it is not a monorepo.
 
-### Auth System
-- Custom cookie-based session (`SESSION_COOKIE = "session"`, 7-day expiry)
-- `getSession()` from `@/lib/auth.ts` returns `{ userId, expiresAt } | null`
-- Server actions ALWAYS call `getSession()` to get `session.userId` for data ownership
-- Sign in: `src/app/(auth)/login/actions.ts` calls `authenticateUser` then `createSession`
+## Environment & Database
 
-### UI Patterns
-- **DataTable**: `@/components/ui/data-table.tsx` — uses `@tanstack/react-table`. Accepts `columns`, `data`, `searchPlaceholder`, `searchColumn` props
-- **Column definitions**: `create<Module>Columns({ onEdit, onDelete })` returns `ColumnDef[]`
-- **Forms**: `react-hook-form` + `zodResolver`. Use `Controller` for shadcn `Select` and `Checkbox`. Pattern: `form.reset()` on dialog open
-- **Toast**: `sonner` for notifications (`toast.success()`, `toast.error()`)
-- **Confirm dialog**: `ConfirmDialog` component in `src/components/common/`
+- `.env` is **not committed** (gitignored) — copy from `.env.example`. Requires `DATABASE_URL` (Neon) and `SESSION_SECRET`; a missing `SESSION_SECRET` throws at runtime inside `src/lib/auth.ts`.
+- `src/generated/prisma/` is generated **and gitignored** — run `pnpm db:generate` on a fresh clone before typechecking (`pnpm build` runs it automatically).
+- Prisma 7 config lives in `prisma7.config.ts` (loads dotenv). Generator `provider = "prisma-client"` → import the client from `@/generated/prisma/client`, **never** `@prisma/client`.
+- **No migration files in the repo** — `prisma/schema.prisma` mirrors the live DB via `pnpm db:pull`. To apply schema edits, run `pnpm exec prisma db push` (no repo script exists), then `pnpm db:pull` to re-sync. Coordinate with the user before editing the schema, since a later `db:pull` overwrites local-only changes.
+- Prisma client is a singleton in `src/lib/prisma.ts` using `@prisma/adapter-neon`. Services use `import "server-only"` — never import Prisma in client components.
 
-### Module Creation Checklist
-When adding a new CRUD module:
-1. Add model to `prisma/schema.prisma`
-2. Run `pnpm db:generate` to regenerate Prisma client
-3. Create `src/services/<module>.ts` (CRUD functions, all scoped to `id_usuario`)
-4. Create `src/schemas/<module>.ts` (Zod schema + type)
-5. Export from `src/schemas/index.ts` and `src/services/index.ts`
-6. Create `src/app/(app)/<module>/actions.ts` (server actions with `_prev` pattern)
-7. Create `src/components/<module>/forma-pago-columns.tsx`, `forma-pago-dialog.tsx`, `delete-confirm-dialog.tsx`, `formas-pago-table.tsx`
-8. Create `src/app/(app)/<module>/page.tsx`
+## Auth (protected in two places)
 
-## Important Constraints
-- All server actions use `"use server"` directive at the top of the file
-- Services use `import "server-only"` to prevent client-side bundling
-- Never import Prisma directly in client components
-- The `id_usuario` always comes from `session.userId` in server actions
-- `forma_pago`, `categoria`, `cuenta` tables all follow the same pattern with `id_usuario` and unique `[id_usuario, nombre]` constraints
-- Navigation items defined in `src/lib/nav.ts` — add new items there when adding routes
+- Custom HMAC-signed cookie session (`session`, 7-day expiry) in `src/lib/auth.ts` — no auth library. `getSession()` returns `{ userId, expiresAt } | null`; `verifyToken(token)` is for reading the cookie off a request.
+- New authenticated routes must be added to the **`protectedRoutes` array in `src/proxy.ts`** (Next 16's replacement for middleware) — otherwise the route is publicly reachable even though `src/app/(app)/layout.tsx` also checks `getSession()`.
+- Sign in/out: `src/app/(auth)/login/actions.ts` (`authenticateUser` → `createSession`). Auth pages live in `src/app/(auth)/` with no layout wrapper.
 
-## Environment
-- `.env` contains `DATABASE_URL` and `SESSION_SECRET` (already committed)
-- `src/generated/prisma/` contains generated Prisma client — don't manually edit
-- `pnpm` lockfile: `pnpm-lock.yaml`
+## Data Layer Pattern (per CRUD module)
+
+1. **Service** (`src/services/<module>.ts`): `"use server"` + `import "server-only"`, wraps Prisma. Every query is scoped by `id_usuario`.
+2. **Schema** (`src/schemas/<module>.ts`): Zod object + exported `...Input` type; re-export from `src/schemas/index.ts` and `src/services/index.ts`.
+3. **Server actions** (`src/app/(app)/<module>/actions.ts`): `"use server"`; `getSession()` → Zod validate → service → `revalidatePath`. Mutations use the `_prev` signature `(_prev: State, data)` for `useActionState`; catch Prisma `"Unique constraint"` errors and return a friendly message.
+4. **Components** (`src/components/<module>/`): `<module>-columns.tsx`, `<module>-dialog.tsx`, `delete-confirm-dialog.tsx`, `<plural>-table.tsx`.
+5. **Page** (`src/app/(app)/<module>/page.tsx`): `"use client"`, renders the table; register the sidebar entry in `src/lib/nav.ts`.
+
+**Copy the `formas-pago` module as the reference implementation** — it exercises the whole pattern (route folder `formas-pago` ↔ service/schema `forma_pago` ↔ components folder `forma-pago`; naming is intentionally not uniform across layers).
+
+Current state: implemented modules are `dashboard`, `movimientos`, `categorias`, `formas-pago`, `configuracion` + auth. `presupuestos` and `reportes` routes exist but render `ModulePlaceholder` stubs.
+
+### Serialization gotcha
+
+Server-action return values cross the RSC boundary — convert Prisma types first: `Date` → `.toISOString()` (date inputs as `"YYYY-MM-DD"` via `.split("T")[0]`) and `Decimal` → `Number(...)`. See `src/app/(app)/movimientos/actions.ts`.
+
+## UI Patterns
+
+- **DataTable**: `@/components/ui/data-table.tsx` (`@tanstack/react-table`) — props `columns`, `data`, `searchPlaceholder`, `searchColumn`.
+- **Columns**: `create<Module>Columns({ onEdit, onDelete })` returns `ColumnDef[]`.
+- **Forms**: `react-hook-form` + `zodResolver`; use `Controller` for shadcn `Select`/`Checkbox`; `form.reset()` when the dialog opens.
+- **Toasts**: `sonner` (`toast.success`/`toast.error`) · **Confirm**: `ConfirmDialog` in `src/components/common/`.
+- shadcn CLI config: `components.json` (style `new-york`, aliases `@/components`, `@/lib/utils`, `@/components/ui`).
+
+## Conventions & Constraints
+
+- All UI copy and user-facing messages are **Spanish** — keep them Spanish.
+- Prettier: double quotes, semicolons, printWidth 100, Tailwind class ordering via `prettier-plugin-tailwindcss` — run `pnpm format` before committing.
+- `id_usuario` always comes from `session.userId` in server actions — never trust client input for record ownership.
+- `categoria`, `cuenta`, `forma_pago` tables have unique `[id_usuario, nombre]` constraints and an index on `id_usuario`.
+- Adding a route = update `src/lib/nav.ts` **and** `protectedRoutes` in `src/proxy.ts`.
+- `CLAUDE.md` is a one-line import of this file (`@AGENTS.md`) — edit this file only.
