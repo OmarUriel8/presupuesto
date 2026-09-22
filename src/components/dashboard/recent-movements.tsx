@@ -11,12 +11,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/common/empty-state";
-import { formatCurrency } from "@/lib/format";
-import type { MovimientoMock } from "@/types";
+import { formatCurrency, formatDate, formatToLocalDate } from "@/lib/format";
+import type { MovimientoResumen } from "@/types";
 import { cn } from "@/lib/utils";
 
 interface RecentMovementsProps {
-  movements: MovimientoMock[];
+  movements: MovimientoResumen[];
 }
 
 export function RecentMovements({ movements }: RecentMovementsProps): React.JSX.Element {
@@ -24,13 +24,13 @@ export function RecentMovements({ movements }: RecentMovementsProps): React.JSX.
     <Card>
       <CardHeader>
         <CardTitle>Movimientos recientes</CardTitle>
-        <CardDescription>Últimos registros del mes (datos de ejemplo).</CardDescription>
+        <CardDescription>Registros del mes seleccionado, más recientes primero.</CardDescription>
       </CardHeader>
       <CardContent>
         {movements.length === 0 ? (
           <EmptyState
             title="Sin movimientos"
-            description="Todavía no hay movimientos registrados este mes."
+            description="Todavía no hay movimientos registrados en este mes."
           />
         ) : (
           <Table>
@@ -44,7 +44,7 @@ export function RecentMovements({ movements }: RecentMovementsProps): React.JSX.
             </TableHeader>
             <TableBody>
               {movements.map((m) => {
-                const isIncome = m.tipo === "ingreso";
+                const isIncome = m.tipo === "INGRESO";
                 return (
                   <TableRow key={m.id}>
                     <TableCell>
@@ -70,11 +70,11 @@ export function RecentMovements({ movements }: RecentMovementsProps): React.JSX.
                       <Badge variant="secondary">{m.categoria}</Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground hidden md:table-cell">
-                      {m.fecha}
+                      {formatDate(formatToLocalDate(m.fecha))}
                     </TableCell>
                     <TableCell
                       className={cn(
-                        "text-right font-semibold",
+                        "text-right font-semibold tabular-nums",
                         isIncome ? "text-success" : "text-destructive"
                       )}
                     >

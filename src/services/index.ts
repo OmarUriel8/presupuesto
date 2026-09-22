@@ -34,3 +34,4 @@ export {
   getFormasPagoActivasByUsuario,
 } from "./movimiento";
 export type { Movimiento, MovimientoWithRelations } from "./movimiento";
+export { getDashboardByMonth } from "./dashboard";
