@@ -1,13 +1,9 @@
-import { ModulePlaceholder } from "@/components/common/module-placeholder";
+import { getReportesData } from "@/app/(app)/reportes/actions";
+import { ReportesView } from "@/components/reportes/reportes-view";
 
-export default function ReportesPage(): React.JSX.Element {
-  return (
-    <ModulePlaceholder
-      title="Reportes"
-      description="Análisis, tendencias y comparativas mensuales."
-      emptyTitle="Sin reportes todavía"
-      emptyDescription="Las gráficas y reportes se habilitarán después del CRUD base."
-      actionLabel="Generar reporte"
-    />
-  );
+export default async function ReportesPage(): Promise<React.JSX.Element> {
+  // Rango por defecto: 6 meses. El cambio de rango refresca desde el cliente.
+  const initialData = await getReportesData(6);
+
+  return <ReportesView initialData={initialData} />;
 }

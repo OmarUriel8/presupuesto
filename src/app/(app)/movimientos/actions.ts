@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { getSession } from "@/lib/auth";
 import {
-  getMovimientosByUsuario,
+  getMovimientosByRango as getMovimientosByRangoService,
   createMovimiento as createMovimientoService,
   updateMovimiento as updateMovimientoService,
   deleteMovimiento as deleteMovimientoService,
@@ -87,32 +87,90 @@ export interface MovimientosData {
   movimientos: MovimientoRow[];
   categorias: CategoriaOption[];
   formasPago: FormaPagoOption[];
+  /** Rango de fechas efectivo (AAAA-MM-DD) tras normalizar la petición. */
+  rango: RangoMovimientos;
+}
+
+/** Rango de fechas en formato AAAA-MM-DD (límites inclusivos). */
+export interface RangoMovimientos {
+  desde: string;
+  hasta: string;
+}
+
+const FECHA_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+function esFechaValida(valor: string): boolean {
+  if (!FECHA_REGEX.test(valor)) return false;
+  const [anio, mes, dia] = valor.split("-").map(Number);
+  const fecha = new Date(anio, mes - 1, dia);
+  return fecha.getFullYear() === anio && fecha.getMonth() === mes - 1 && fecha.getDate() === dia;
+}
+
+/** Hoy en formato AAAA-MM-DD (fecha local, igual que los inputs date). */
+function fechaHoy(): string {
+  const hoy = new Date();
+  const pad = (n: number): string => String(n).padStart(2, "0");
+  return `${hoy.getFullYear()}-${pad(hoy.getMonth() + 1)}-${pad(hoy.getDate())}`;
+}
+
+/** Misma fecha un mes atrás, ajustada al último día si el mes es más corto. */
+function mesAnterior(fecha: string): string {
+  const [anio, mes, dia] = fecha.split("-").map(Number);
+  const pad = (n: number): string => String(n).padStart(2, "0");
+  const previo = new Date(anio, mes - 2, 1);
+  const ultimoDia = new Date(anio, mes - 1, 0).getDate();
+  return `${previo.getFullYear()}-${pad(previo.getMonth() + 1)}-${pad(Math.min(dia, ultimoDia))}`;
+}
+
+/**
+ * Normaliza el rango pedido: fechas inválidas o ausentes usan el último mes
+ * (hasta = hoy, desde = mismo día del mes anterior) y un rango invertido se
+ * intercambia para que desde nunca sea posterior a hasta.
+ */
+function normalizarRango(desde?: string, hasta?: string): RangoMovimientos {
+  const hoy = fechaHoy();
+  const hastaValida = hasta && esFechaValida(hasta) ? hasta : hoy;
+  const desdeValida = desde && esFechaValida(desde) ? desde : mesAnterior(hastaValida);
+  if (desdeValida > hastaValida) {
+    return { desde: hastaValida, hasta: desdeValida };
+  }
+  return { desde: desdeValida, hasta: hastaValida };
 }
 
 /**
  * Carga todo lo que necesita la página de movimientos en una sola llamada.
  * Se usa desde el server component (datos iniciales) y como refetch en el cliente.
+ * Sin rango trae el último mes por defecto.
  */
-export async function getMovimientosData(): Promise<MovimientosData> {
+export async function getMovimientosData(desde?: string, hasta?: string): Promise<MovimientosData> {
+  const rango = normalizarRango(desde, hasta);
   const session = await getSession();
   if (!session) {
-    return { movimientos: [], categorias: [], formasPago: [] };
+    return { movimientos: [], categorias: [], formasPago: [], rango };
   }
 
   const [movimientos, categorias, formasPago] = await Promise.all([
-    getMovimientos(),
+    getMovimientos(rango.desde, rango.hasta),
     getCategoriasOptions(),
     getFormasPagoOptions(),
   ]);
 
-  return { movimientos, categorias, formasPago };
+  return { movimientos, categorias, formasPago, rango };
 }
 
-export async function getMovimientos(): Promise<MovimientoRow[]> {
+/**
+ * Movimientos del usuario dentro del rango indicado (AAAA-MM-DD, inclusivo).
+ * Las fechas se almacenan como DATE, así que se comparan directo en ese formato.
+ */
+export async function getMovimientos(desde: string, hasta: string): Promise<MovimientoRow[]> {
   const session = await getSession();
   if (!session) return [];
 
-  const movimientos = await getMovimientosByUsuario(session.userId);
+  const rango = normalizarRango(desde, hasta);
+  const movimientos = await getMovimientosByRangoService(session.userId, {
+    desde: new Date(rango.desde),
+    hasta: new Date(rango.hasta),
+  });
   return movimientos.map((m) => ({
     ...m,
     fecha: m.fecha.toISOString().split("T")[0],

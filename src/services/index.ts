@@ -26,6 +26,7 @@ export {
 export type { FormaPago } from "./forma_pago";
 export {
   getMovimientosByUsuario,
+  getMovimientosByRango,
   getMovimientoById,
   createMovimiento,
   updateMovimiento,
@@ -33,5 +34,7 @@ export {
   getCategoriasActivasByUsuario,
   getFormasPagoActivasByUsuario,
 } from "./movimiento";
-export type { Movimiento, MovimientoWithRelations } from "./movimiento";
+export type { Movimiento, MovimientoWithRelations, RangoFechasMovimiento } from "./movimiento";
 export { getDashboardByMonth } from "./dashboard";
+export { getReporteFinanciero } from "./reporte";
+export type { RangoMesesReporte } from "./reporte";

@@ -10,9 +10,15 @@ import {
 } from "@/components/movimientos/movimiento-columns";
 import { MovimientoDialog } from "@/components/movimientos/movimiento-dialog";
 import { DeleteConfirmDialog } from "@/components/movimientos/delete-confirm-dialog";
+import {
+  MovimientoFilters,
+  filtrarMovimientos,
+  filtrosPorDefecto,
+  type FiltrosMovimiento,
+} from "@/components/movimientos/movimiento-filters";
 import { EmptyState } from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { MovimientoInput } from "@/schemas/movimiento";
 import {
@@ -42,16 +48,44 @@ export function MovimientosTable({ initialData }: MovimientosTableProps): React.
 
   const [isPending, startTransition] = React.useTransition();
 
-  const refetch = React.useCallback(async (): Promise<void> => {
-    try {
-      const result = await getMovimientosData();
-      setData(result);
-    } catch (err) {
-      toast.error("Error", {
-        description: err instanceof Error ? err.message : "Error al cargar los movimientos.",
-      });
-    }
-  }, []);
+  // Filtros del buscador; las fechas iniciales son el rango efectivo del servidor.
+  const [filtros, setFiltros] = React.useState<FiltrosMovimiento>(() => ({
+    ...filtrosPorDefecto(),
+    fechaDesde: initialData.rango.desde,
+    fechaHasta: initialData.rango.hasta,
+  }));
+
+  const cargarMovimientos = React.useCallback(
+    async (desde: string, hasta: string): Promise<void> => {
+      try {
+        const result = await getMovimientosData(desde, hasta);
+        setData(result);
+        // El servidor normaliza el rango: se sincronizan las fechas efectivas.
+        setFiltros((prev) => ({
+          ...prev,
+          fechaDesde: result.rango.desde,
+          fechaHasta: result.rango.hasta,
+        }));
+      } catch (err) {
+        toast.error("Error", {
+          description: err instanceof Error ? err.message : "Error al cargar los movimientos.",
+        });
+      }
+    },
+    []
+  );
+
+  /** Recarga con el rango actual (tras crear, editar o eliminar). */
+  function refetch(): Promise<void> {
+    return cargarMovimientos(filtros.fechaDesde, filtros.fechaHasta);
+  }
+
+  /** Cambio de fechas: reconsulta al servidor con el nuevo rango. */
+  function handleRangoChange(desde: string, hasta: string): void {
+    startTransition(async () => {
+      await cargarMovimientos(desde, hasta);
+    });
+  }
 
   function handleCreate(input: MovimientoInput): void {
     startTransition(async () => {
@@ -121,6 +155,11 @@ export function MovimientosTable({ initialData }: MovimientosTableProps): React.
     }
   }
 
+  const movimientosFiltrados = React.useMemo(
+    () => filtrarMovimientos(data.movimientos, filtros),
+    [data.movimientos, filtros]
+  );
+
   const columns = React.useMemo(
     () =>
       createMovimientoColumns({
@@ -186,12 +225,31 @@ export function MovimientosTable({ initialData }: MovimientosTableProps): React.
           }
         />
       ) : (
-        <DataTable
-          columns={columns}
-          data={data.movimientos}
-          searchPlaceholder="Buscar movimiento..."
-          searchColumn="descripcion"
-        />
+        <div className="space-y-4">
+          <MovimientoFilters
+            filtros={filtros}
+            onChange={setFiltros}
+            onRangoChange={handleRangoChange}
+            movimientos={data.movimientos}
+            total={data.movimientos.length}
+            filtrados={movimientosFiltrados.length}
+          />
+
+          {movimientosFiltrados.length === 0 ? (
+            <EmptyState
+              title="Sin resultados para los filtros"
+              description="Ningún movimiento coincide con los filtros. Ajusta la búsqueda o limpia los filtros para ver todo el historial."
+              action={
+                <Button variant="outline" onClick={() => setFiltros(filtrosPorDefecto())}>
+                  <XIcon className="h-4 w-4" />
+                  Limpiar filtros
+                </Button>
+              }
+            />
+          ) : (
+            <DataTable columns={columns} data={movimientosFiltrados} />
+          )}
+        </div>
       )}
 
       <MovimientoDialog

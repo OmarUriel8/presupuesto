@@ -30,8 +30,32 @@ export interface MovimientoWithRelations extends Movimiento {
 export async function getMovimientosByUsuario(
   id_usuario: string
 ): Promise<MovimientoWithRelations[]> {
+  return getMovimientosByRango(id_usuario);
+}
+
+/** Rango de fechas opcional para filtrar movimientos (límites inclusivos). */
+export interface RangoFechasMovimiento {
+  desde?: Date;
+  hasta?: Date;
+}
+
+/**
+ * Movimientos del usuario dentro de un rango de fechas.
+ * Sin rango devuelve todo el historial (igual que getMovimientosByUsuario).
+ */
+export async function getMovimientosByRango(
+  id_usuario: string,
+  rango: RangoFechasMovimiento = {}
+): Promise<MovimientoWithRelations[]> {
+  const { desde, hasta } = rango;
   return prisma.movimiento.findMany({
-    where: { id_usuario },
+    where: {
+      id_usuario,
+      fecha: {
+        ...(desde ? { gte: desde } : {}),
+        ...(hasta ? { lte: hasta } : {}),
+      },
+    },
     include: {
       categoria: true,
       forma_pago: true,
@@ -110,10 +134,7 @@ export async function updateMovimiento(
   });
 }
 
-export async function deleteMovimiento(
-  id_movimiento: string,
-  id_usuario: string
-): Promise<void> {
+export async function deleteMovimiento(id_movimiento: string, id_usuario: string): Promise<void> {
   await prisma.movimiento.delete({
     where: {
       id_movimiento,
