@@ -44,4 +44,10 @@ docker build \
   --build-arg NEXT_PUBLIC_APP_VERSION=1.0.1 \
   --build-arg DATABASE_URL="postgresql://neondb_owner:tu_password@tu-host.neon.tech/neondb?sslmode=require&channel_binding=require" \
   -t presupuesto-next-js .
-docker run -p 3000:3000 -d --env-file .env presupuesto-next-js
+  
+docker run -d \
+  --name presupuesto-next-js \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  --env-file .env \
+  presupuesto-next-js
